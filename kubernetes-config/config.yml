@@ -1,0 +1,111 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wen-v1
+  labels:
+    app: wen
+    version: v1
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 9080
+    targetPort: 8888
+    name: http
+  selector:
+    app: wen
+    version: v1
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wen-v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wen
+        version: v1
+    spec:
+      containers:
+      - name: wen
+        image: luoweng/nodejs-hello:0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wen-v2
+  labels:
+    app: wen
+    version: v2
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 9080
+    targetPort: 8888
+    name: http
+  selector:
+    app: wen
+    version: v2
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wen-v2
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wen
+        version: v2
+    spec:
+      containers:
+      - name: wen
+        image: luoweng/nodejs-hello:0.2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wen-nginx
+  labels:
+    app: wen-nginx
+    version: v1
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8888
+    targetPort: 8888
+    name: http
+  selector:
+    app: wen-nginx
+    version: v1
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wen-nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wen-nginx
+        version: v1
+    spec:
+      containers:
+      - name: wen-nginx
+        image: luoweng/nginx-proxy:v1
+        imagePullPolicy: "Always"
+        command: ["/bin/sh", "-c"]
+        args: ["nginx; service nginx status; tail -f /var/log/nginx/access.log"]
+        ports:
+        - containerPort: 8888
+
